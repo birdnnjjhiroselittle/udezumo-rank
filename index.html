@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>💪 腕ずもうランク — 地域ランキング × 成長するトレカ</title>
+<style>
+  :root{--bg:#0f1220;--panel:#181c30;--line:#2a3050;--text:#e8eaf6;--sub:#9aa3c7;--accent:#ff6b35;--ok:#3ecf8e;--warn:#ffb020;--ng:#ff4d6d}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;background:var(--bg);color:var(--text)}
+  header{padding:14px 18px;background:linear-gradient(90deg,#ff6b35,#d7263d);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  header h1{margin:0;font-size:20px}
+  header small{opacity:.9}
+  nav{display:flex;gap:4px;padding:8px;background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto;position:sticky;top:0;z-index:5}
+  nav button{flex:none;background:none;border:0;color:var(--sub);padding:10px 14px;border-radius:8px;font-size:15px;cursor:pointer}
+  nav button.on{background:var(--accent);color:#fff;font-weight:bold}
+  main{max-width:980px;margin:0 auto;padding:16px}
+  section{display:none}section.on{display:block}
+  .box{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+  h2{margin:0 0 12px;font-size:18px}h3{margin:14px 0 8px;font-size:16px}
+  label{display:block;font-size:13px;color:var(--sub);margin:10px 0 4px}
+  input,select{width:100%;padding:10px;border-radius:8px;border:1px solid var(--line);background:#0c0f1c;color:var(--text);font-size:15px}
+  .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+  .btn{background:var(--accent);color:#fff;border:0;padding:11px 16px;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer}
+  .btn.sub{background:#2a3050}.btn.ng{background:var(--ng)}.btn.ok{background:var(--ok);color:#06281a}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{padding:9px 6px;border-bottom:1px solid var(--line);text-align:left}
+  th{color:var(--sub);font-weight:normal;font-size:12px}
+  tr.click{cursor:pointer}tr.click:hover{background:#20253f}
+  .rank{font-weight:bold;font-size:16px;width:40px}
+  .r1{color:#ffd700}.r2{color:#c0c0c0}.r3{color:#cd7f32}
+  .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:bold;color:#111}
+  .chip{display:inline-block;padding:3px 9px;border-radius:999px;font-size:12px;background:#2a3050;margin:2px}
+  .note{font-size:12px;color:var(--sub);line-height:1.6}
+  .lv{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+  .lv span{padding:6px 10px;border-radius:8px;background:#0c0f1c;border:1px solid var(--line);font-size:12px;color:var(--sub)}
+  .lv span.on{border-color:var(--ok);color:var(--ok);font-weight:bold}
+  .agree{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+  .agree button{padding:14px;border-radius:10px;border:2px dashed var(--line);background:#0c0f1c;color:var(--sub);font-size:14px;cursor:pointer}
+  .agree button.on{border:2px solid var(--ok);color:var(--ok);background:#0f2a20}
+  video{width:100%;max-height:260px;border-radius:10px;margin-top:8px;background:#000}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#fff;color:#111;padding:12px 18px;border-radius:10px;font-weight:bold;box-shadow:0 6px 24px #0008;display:none;z-index:20}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+  .mini{border-radius:12px;padding:10px;cursor:pointer;color:#111;min-height:120px;position:relative}
+  .mini b{display:block;font-size:15px}.mini .p{font-size:22px;font-weight:900}
+  .frozen{filter:grayscale(1);opacity:.6}
+  /* big card */
+  .tc-wrap{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+  .tc{width:300px;height:430px;border-radius:18px;padding:12px;position:relative;box-shadow:0 10px 30px #0009;flex:none}
+  .tc-in{background:#fff;border-radius:12px;height:100%;padding:12px;color:#111;display:flex;flex-direction:column}
+  .tc-top{display:flex;justify-content:space-between;align-items:center}
+  .tc-name{font-size:22px;font-weight:900}
+  .tc-art{height:130px;border-radius:10px;margin:8px 0;display:flex;align-items:center;justify-content:center;font-size:72px}
+  .tc-power{font-size:13px;color:#555}.tc-power b{font-size:30px;color:#111}
+  .tc-stats{display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px;margin-top:6px}
+  .tc-stats div{background:#f2f3f7;border-radius:6px;padding:4px 6px}
+  .tc-title{font-size:12px;margin-top:6px;color:#d7263d;font-weight:bold;min-height:16px}
+  .tc-foot{margin-top:auto;font-size:10px;color:#888;display:flex;justify-content:space-between}
+  .stamp{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:900;color:var(--ng);transform:rotate(-18deg);text-shadow:0 0 8px #fff}
+  .vision p,.vision li{line-height:1.8}
+  .flow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .flow div{background:#0c0f1c;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px}
+  .flow i{color:var(--accent);font-style:normal;font-weight:bold}
+</style>
+</head>
+<body>
+<header>
+  <h1>💪 腕ずもうランク</h1>
+  <small>地域ランキング × 勝つほど育つトレカ ― 「喧嘩より公式戦」</small>
+</header>
+<nav id="nav">
+  <button data-t="rank" class="on">🏆 ランキング</button>
+  <button data-t="match">⚔️ 対戦登録</button>
+  <button data-t="cards">🃏 トレカ</button>
+  <button data-t="player">👤 選手登録</button>
+  <button data-t="vision">💡 構想</button>
+</nav>
+<main>
+
+<!-- ランキング -->
+<section id="rank" class="on">
+  <div class="box">
+    <h2>🏆 ランキング</h2>
+    <div class="row">
+      <div><label>範囲</label><select id="fScope">
+        <option value="all">🇯🇵 全国</option><option value="pref">都道府県</option><option value="city">市区町村</option><option value="world" disabled>🌏 世界（今後）</option>
+      </select></div>
+      <div><label>地域</label><select id="fArea"></select></div>
+      <div><label>腕</label><select id="fArm"><option value="R">右腕</option><option value="L">左腕</option><option value="">右＋左（総合）</option></select></div>
+      <div><label>期間</label><select id="fYear"></select></div>
+    </div>
+    <div id="rankTable" style="margin-top:12px"></div>
+    <p class="note">※ 戦闘力は Elo方式（初期1500）。<b>証拠が強いほどポイントの重みが大きく</b>、同じ相手との連戦は重みが下がります（なれあい対策）。凍結された選手は表示されません。</p>
+  </div>
+</section>
+
+<!-- 対戦登録 -->
+<section id="match">
+  <div class="box">
+    <h2>⚔️ 対戦を記録する</h2>
+    <div class="flow"><div>① 選手を選ぶ</div><i>→</i><div>② スマホで録画</div><i>→</i><div>③ 勝者を選ぶ</div><i>→</i><div>④ 両者が合意</div><i>→</i><div>⑤ 立会人が承認（任意）</div></div>
+    <div class="row" style="margin-top:6px">
+      <div><label>選手A</label><select id="mA"></select></div>
+      <div><label>選手B</label><select id="mB"></select></div>
+      <div><label>腕</label><select id="mArm"><option value="R">右腕</option><option value="L">左腕</option></select></div>
+      <div><label>場所（ジム・店舗など）</label><input id="mPlace" placeholder="例：渋谷アームジム"></div>
+    </div>
+    <label>📹 勝敗の証拠動画（スマホならカメラが起動）</label>
+    <input type="file" id="mVideo" accept="video/*" capture="environment">
+    <video id="mPreview" controls style="display:none"></video>
+    <label>勝者</label>
+    <div class="agree" id="mWinBox"></div>
+    <label>両者の合意（本番は各自のスマホでQRを読み合ってタップ）</label>
+    <div class="agree"><button id="agA">選手A：結果に合意する</button><button id="agB">選手B：結果に合意する</button></div>
+    <label>立会人（認定ジムのオーナー・店長など。空欄可）</label>
+    <input id="mRef" placeholder="例：渋谷アームジム 山田（認定立会人）">
+    <label>この対戦の検証レベル（自動判定）</label>
+    <div class="lv" id="mLv"></div>
+    <p class="note" id="mLvNote"></p>
+    <button class="btn" id="mSave" style="margin-top:10px">記録する</button>
+    <div id="mResult" style="margin-top:12px"></div>
+  </div>
+  <div class="box">
+    <h2>📜 最近の対戦</h2>
+    <div id="recent"></div>
+  </div>
+</section>
+
+<!-- トレカ -->
+<section id="cards">
+  <div class="box" id="cardDetailBox" style="display:none">
+    <div class="tc-wrap">
+      <div id="cardBig"></div>
+      <div style="flex:1;min-width:240px">
+        <h2 id="cdName"></h2>
+        <div id="cdInfo" class="note"></div>
+        <h3>🗡 撃破記録（強かった相手 TOP3）</h3><div id="cdBeat"></div>
+        <h3>🤝 交換したカード（対戦した相手）</h3><div id="cdSwap"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+          <button class="btn" id="cdPng">🖼 画像で保存</button>
+          <button class="btn sub" id="cdShare">𝕏 SNSでシェア</button>
+          <button class="btn ok" id="cdFair">👍 フェアプレー評価</button>
+          <button class="btn ng" id="cdFreeze">🚫 暴力行為を通報（凍結）</button>
+        </div>
+        <p class="note">本人のカードは<b>売買できません</b>（本人専用・名誉の証）。価値は値段ではなく<b>レアリティ・称号・順位</b>で上がります。路上での暴力が確認されるとカードは凍結され、積み上げた戦績を失います。</p>
+      </div>
+    </div>
+  </div>
+  <div class="box">
+    <h2>🃏 選手カード一覧</h2>
+    <p class="note">勝つほどレアリティが上がります： N → R → SR → UR → LEGEND</p>
+    <div class="cards" id="cardList"></div>
+  </div>
+</section>
+
+<!-- 選手登録 -->
+<section id="player">
+  <div class="box">
+    <h2>👤 選手登録</h2>
+    <div class="row">
+      <div><label>リングネーム</label><input id="pName" placeholder="例：鉄腕タロウ"></div>
+      <div><label>都道府県</label><select id="pPref"></select></div>
+      <div><label>市区町村</label><input id="pCity" placeholder="例：渋谷区"></div>
+      <div><label>所属ジム・店舗</label><input id="pGym" placeholder="例：渋谷アームジム"></div>
+      <div><label>階級</label><select id="pClass"><option>-60kg</option><option>-70kg</option><option>-80kg</option><option>-90kg</option><option>+90kg</option><option>女子</option></select></div>
+      <div><label>カードの絵柄</label><select id="pIcon"><option>💪</option><option>🦍</option><option>🐻</option><option>🐯</option><option>🦁</option><option>🐉</option><option>🤖</option><option>⚡</option><option>🔥</option><option>🌸</option></select></div>
+    </div>
+    <label><input type="checkbox" id="pPledge" style="width:auto"> 私は路上での喧嘩・暴力をしません。違反した場合、カードが凍結されることに同意します。（反暴力の誓約）</label>
+    <button class="btn" id="pSave" style="margin-top:12px">登録してカードを発行</button>
+  </div>
+  <div class="box">
+    <h2>🧪 デモ</h2>
+    <p class="note">プレゼン用のサンプル選手・対戦データを入れたり、全データを消したりできます（データはこのブラウザ内にだけ保存されます）。</p>
+    <button class="btn sub" id="demo">サンプルデータを入れる</button>
+    <button class="btn ng" id="reset">全データを消す</button>
+  </div>
+</section>
+
+<!-- 構想 -->
+<section id="vision" class="vision">
+  <div class="box">
+    <h2>💡 なぜ腕ずもうなのか ― 「喧嘩より公式戦」</h2>
+    <p>「強さを証明したい」という気持ちは、場所がないと路上の喧嘩になります。このサービスは、<b>強さを証明する正規ルート</b>と、<b>暴力で失うもの（育てたカード）</b>を同時に用意します。</p>
+    <ul>
+      <li><b>数秒で決着</b>：短い縦型動画がそのままSNSの拡散材料になる</li>
+      <li><b>勝敗が明確</b>：手の甲がパッドに付けば負け。誰が見ても判定できる</li>
+      <li><b>安全・低コスト</b>：台1つでどこでもできる。打撃なし</li>
+    </ul>
+  </div>
+  <div class="box">
+    <h2>🛡 反暴力の仕組み</h2>
+    <ul>
+      <li><b>失うものを持たせる</b>：勝つほどカードが育つ。路上の暴力が確認されたら凍結・剥奪</li>
+      <li><b>フェアプレー値</b>：対戦相手からの評価がカードに載る。「礼儀正しく強い」ほど格が上がる</li>
+      <li><b>カード交換の儀式</b>：試合後に握手してカードを交換。相手への敬意を文化にする</li>
+      <li><b>お金と勝敗を切り離す</b>：本人カードは売買不可。賭博や八百長の動機を作らない</li>
+      <li><b>立会人も評価される</b>：おかしな承認をした立会人は信用スコアが下がる</li>
+    </ul>
+  </div>
+  <div class="box">
+    <h2>🌏 広がり方</h2>
+    <div class="flow">
+      <div>💪 腕ずもう<br><span class="note">勝敗が明確・SNS映え</span></div><i>→</i>
+      <div>🥋 柔術<br><span class="note">タップで決着＝不正しにくい</span></div><i>→</i>
+      <div>🎱 ビリヤード・🎾 テニス<br><span class="note">日常的な対戦</span></div><i>→</i>
+      <div>🏅 あらゆる対戦<br><span class="note">共通の「対戦ID」</span></div>
+    </div>
+    <p class="note">打撃系は「反則（裏拳・後頭部など）との境目」が一般の人には見分けにくいため、当面は対象外。柔術はタップアウトで勝敗がはっきりするため、ボクシングの代わりに格闘技の柱とします。柔術は競技団体の公式アプリとして提案する想定です。</p>
+  </div>
+</section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== データ =====
+const KEY = 'udezumo-rank-v1';
+const PREFS = '北海道,青森県,岩手県,宮城県,秋田県,山形県,福島県,茨城県,栃木県,群馬県,埼玉県,千葉県,東京都,神奈川県,新潟県,富山県,石川県,福井県,山梨県,長野県,岐阜県,静岡県,愛知県,三重県,滋賀県,京都府,大阪府,兵庫県,奈良県,和歌山県,鳥取県,島根県,岡山県,広島県,山口県,徳島県,香川県,愛媛県,高知県,福岡県,佐賀県,長崎県,熊本県,大分県,宮崎県,鹿児島県,沖縄県'.split(',');
+const LV = [
+  {name:'Lv0 自己申告', w:0,   note:'記録のみ。ランキングには反映されません。'},
+  {name:'Lv1 両者合意', w:0.3, note:'両者がアプリで合意。重み ×0.3'},
+  {name:'Lv2 ＋動画',   w:0.7, note:'証拠動画あり（本番はAIが人数・時刻・場所を確認）。重み ×0.7'},
+  {name:'Lv3 ＋立会人', w:1.0, note:'認定立会人が承認。重み ×1.0'},
+  {name:'Lv4 公式大会', w:1.2, note:'公式大会の結果を取り込み。重み ×1.2'},
+];
+const RAR = [
+  {k:'LEGEND',min:1700,games:15,bg:'linear-gradient(135deg,#ff004c,#ffb300,#00e5ff,#b000ff)',c:'#fff'},
+  {k:'UR',min:1640,games:10,bg:'linear-gradient(135deg,#fceabb,#f8b500,#fceabb)',c:'#5a3d00'},
+  {k:'SR',min:1580,games:6,bg:'linear-gradient(135deg,#e0e0e0,#9e9e9e,#f5f5f5)',c:'#333'},
+  {k:'R',min:1530,games:3,bg:'linear-gradient(135deg,#7fd3ff,#2f7cf6)',c:'#fff'},
+  {k:'N',min:0,games:0,bg:'linear-gradient(135deg,#b8c0cc,#7d8796)',c:'#fff'},
+];
+let db = load();
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {players:[],matches:[]} }catch(e){ return {players:[],matches:[]} } }
+function save(){ localStorage.setItem(KEY, JSON.stringify(db)); }
+const $ = id => document.getElementById(id);
+const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const P = id => db.players.find(p => p.id === id);
+const uid = () => Math.random().toString(36).slice(2,10);
+function toast(t){ const e=$('toast'); e.textContent=t; e.style.display='block'; clearTimeout(e._t); e._t=setTimeout(()=>e.style.display='none',2200); }
+
+// ===== レーティング計算（対戦履歴を時系列で再生） =====
+function compute(arm, year){
+  const st = {};
+  db.players.forEach(p => st[p.id] = {r:1500, w:0, l:0, games:0, beat:{}, met:new Set()});
+  const pairCount = {};
+  const ms = db.matches
+    .filter(m => (!arm || m.arm === arm) && (!year || m.date.slice(0,4) === year))
+    .sort((a,b) => a.date.localeCompare(b.date));
+  for (const m of ms){
+    const A = st[m.a], B = st[m.b]; if (!A || !B) continue;
+    const key = [m.a,m.b].sort().join('|') + m.date.slice(0,4);
+    pairCount[key] = (pairCount[key]||0) + 1;
+    const w = LV[m.level].w / pairCount[key];       // 同じ相手との連戦は重みが下がる
+    const ea = 1/(1+Math.pow(10,(B.r-A.r)/400));
+    const sa = m.winner === m.a ? 1 : 0;
+    const d = 32 * w * (sa - ea);
+    m._delta = Math.round(Math.abs(d));
+    A.r += d; B.r -= d;
+    const W = m.winner === m.a ? A : B, L = m.winner === m.a ? B : A;
+    const lid = m.winner === m.a ? m.b : m.a, wid = m.winner;
+    W.w++; L.l++; A.games++; B.games++;
+    A.met.add(m.b); B.met.add(m.a);
+    W.beat[lid] = Math.max(W.beat[lid]||0, (lid===m.a?A:B).r);
+  }
+  return st;
+}
+function rarity(s, p){
+  if (!s) return RAR[4];
+  return RAR.find(x => s.r >= x.min && s.games >= x.games) || RAR[4];
+}
+
+// ===== タブ =====
+$('nav').onclick = e => {
+  const b = e.target.closest('button'); if(!b) return;
+  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x===b));
+  document.querySelectorAll('main section').forEach(s => s.classList.toggle('on', s.id === b.dataset.t));
+  render();
+};
+
+// ===== ランキング =====
+function fillFilters(){
+  const years = [...new Set(db.matches.map(m => m.date.slice(0,4)))].sort().reverse();
+  const fy = $('fYear'), cur = fy.value;
+  fy.innerHTML = '<option value="">通算</option>' + years.map(y => `<option value="${y}">${y}年 年間</option>`).join('');
+  if ([...fy.options].some(o=>o.value===cur)) fy.value = cur; else if (years[0]) fy.value = years[0];
+  const scope = $('fScope').value, fa = $('fArea'), ca = fa.value;
+  let areas = [];
+  if (scope === 'pref') areas = [...new Set(db.players.map(p => p.pref))];
+  if (scope === 'city') areas = [...new Set(db.players.map(p => p.pref + ' ' + p.city))];
+  fa.disabled = scope === 'all';
+  fa.innerHTML = scope === 'all' ? '<option>全国</option>' : areas.sort().map(a => `<option>${esc(a)}</option>`).join('');
+  if ([...fa.options].some(o=>o.value===ca)) fa.value = ca;
+}
+['fScope','fArea','fArm','fYear'].forEach(id => $(id).onchange = () => render());
+function renderRank(){
+  fillFilters();
+  const st = compute($('fArm').value, $('fYear').value);
+  const scope = $('fScope').value, area = $('fArea').value;
+  const list = db.players.filter(p => !p.frozen && st[p.id].games > 0)
+    .filter(p => scope==='all' || (scope==='pref' ? p.pref===area : (p.pref+' '+p.city)===area))
+    .sort((a,b) => st[b.id].r - st[a.id].r);
+  if (!list.length){ $('rankTable').innerHTML = '<p class="note">まだ対戦がありません。「選手登録」→「対戦登録」、またはデモデータを入れてください。</p>'; return; }
+  $('rankTable').innerHTML = `<table><tr><th>順位</th><th>選手</th><th>地域</th><th>戦闘力</th><th>勝-敗</th><th>カード</th></tr>` +
+    list.map((p,i) => { const s = st[p.id], r = rarity(s);
+      return `<tr class="click" data-id="${p.id}"><td class="rank ${i<3?'r'+(i+1):''}">${i+1}</td>
+      <td>${esc(p.icon)} <b>${esc(p.name)}</b><br><span class="note">${esc(p.gym||'')}</span></td>
+      <td class="note">${esc(p.pref)}<br>${esc(p.city)}</td><td><b>${Math.round(s.r)}</b></td><td>${s.w}-${s.l}</td>
+      <td><span class="badge" style="background:${r.bg};color:${r.c}">${r.k}</span></td></tr>`; }).join('') + '</table>';
+  $('rankTable').querySelectorAll('tr.click').forEach(tr => tr.onclick = () => openCard(tr.dataset.id));
+}
+
+// ===== 対戦登録 =====
+let mState = {winner:null, agA:false, agB:false, video:null};
+function fillMatchSelects(){
+  const opts = db.players.filter(p=>!p.frozen).map(p => `<option value="${p.id}">${esc(p.icon)} ${esc(p.name)}（${esc(p.city)}）</option>`).join('');
+  ['mA','mB'].forEach((id,i) => { const v=$(id).value; $(id).innerHTML = opts; if (v) $(id).value=v; else if ($(id).options[i]) $(id).selectedIndex=i; });
+  renderWinBox();
+}
+function renderWinBox(){
+  const a = P($('mA').value), b = P($('mB').value);
+  $('mWinBox').innerHTML = [a,b].map(p => p ? `<button data-id="${p.id}" class="${mState.winner===p.id?'on':''}">🏆 ${esc(p.name)} の勝ち</button>` : '').join('');
+  $('mWinBox').querySelectorAll('button').forEach(bt => bt.onclick = () => { mState.winner = bt.dataset.id; mState.agA = mState.agB = false; renderMatchUI(); });
+  $('agA').textContent = (a?a.name:'選手A') + '：結果に合意する';
+  $('agB').textContent = (b?b.name:'選手B') + '：結果に合意する';
+}
+function curLevel(){
+  if (!(mState.agA && mState.agB)) return 0;
+  if (!mState.video) return 1;
+  if (!$('mRef').value.trim()) return 2;
+  return 3;
+}
+function renderMatchUI(){
+  renderWinBox();
+  $('agA').classList.toggle('on', mState.agA); $('agB').classList.toggle('on', mState.agB);
+  const lv = curLevel();
+  $('mLv').innerHTML = LV.slice(0,4).map((l,i) => `<span class="${i===lv?'on':''}">${l.name}</span>`).join('');
+  $('mLvNote').textContent = LV[lv].note;
+}
+['mA','mB'].forEach(id => $(id).onchange = () => { mState.winner=null; mState.agA=mState.agB=false; renderMatchUI(); });
+$('mRef').oninput = renderMatchUI;
+$('agA').onclick = () => { if(!mState.winner) return toast('先に勝者を選んでください'); mState.agA = !mState.agA; renderMatchUI(); };
+$('agB').onclick = () => { if(!mState.winner) return toast('先に勝者を選んでください'); mState.agB = !mState.agB; renderMatchUI(); };
+$('mVideo').onchange = e => {
+  const f = e.target.files[0]; mState.video = f ? f.name : null;
+  const v = $('mPreview'); if (f){ v.src = URL.createObjectURL(f); v.style.display='block'; } else v.style.display='none';
+  renderMatchUI();
+};
+$('mSave').onclick = () => {
+  const a = $('mA').value, b = $('mB').value;
+  if (!a || !b) return toast('選手を2人登録してください');
+  if (a === b) return toast('違う選手を選んでください');
+  if (!mState.winner) return toast('勝者を選んでください');
+  const arm = $('mArm').value;
+  const before = compute(arm, '');
+  const m = {id:uid(), date:new Date().toISOString(), a, b, winner:mState.winner, arm, level:curLevel(),
+    place:$('mPlace').value.trim(), referee:$('mRef').value.trim(), video:mState.video};
+  db.matches.push(m); save();
+  const after = compute(arm, '');
+  const w = P(m.winner), rb = rarity(before[m.winner]), ra = rarity(after[m.winner]);
+  const diff = Math.round(after[m.winner].r - before[m.winner].r);
+  $('mResult').innerHTML = `<div class="box" style="background:#0f2a20;border-color:var(--ok)">
+    🏆 <b>${esc(w.name)}</b> の勝ち！ 戦闘力 ${Math.round(before[m.winner].r)} → <b>${Math.round(after[m.winner].r)}</b>（+${diff}） / ${LV[m.level].name}
+    ${ra.k !== rb.k ? `<br>🎉 <b>カードが ${rb.k} → ${ra.k} に進化しました！</b>` : ''}
+    ${m.level===0 ? '<br><span class="note">※ 自己申告のみのため、ランキングには反映されていません</span>' : ''}</div>`;
+  mState = {winner:null, agA:false, agB:false, video:null};
+  $('mVideo').value=''; $('mPreview').style.display='none'; $('mRef').value='';
+  render();
+};
+function renderRecent(){
+  const ms = [...db.matches].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,12);
+  $('recent').innerHTML = ms.length ? `<table><tr><th>日付</th><th>勝者</th><th>敗者</th><th>腕</th><th>検証</th></tr>` + ms.map(m => {
+    const w=P(m.winner), l=P(m.winner===m.a?m.b:m.a);
+    return `<tr><td class="note">${m.date.slice(0,10)}</td><td>🏆 ${esc(w?.name)}</td><td>${esc(l?.name)}</td><td>${m.arm==='R'?'右':'左'}</td><td class="note">${LV[m.level].name}${m.video?' 📹':''}</td></tr>`;
+  }).join('') + '</table>' : '<p class="note">まだ対戦がありません。</p>';
+}
+
+// ===== トレカ =====
+let curCard = null;
+function titles(p, st){
+  const t = [], act = db.players.filter(x=>!x.frozen && st[x.id].games>0);
+  const by = f => act.filter(f).sort((a,b)=>st[b.id].r-st[a.id].r)[0];
+  if (by(()=>true)?.id === p.id) t.push('👑 全国1位');
+  if (by(x=>x.pref===p.pref)?.id === p.id) t.push(`🏅 ${p.pref}1位`);
+  if (by(x=>x.pref===p.pref && x.city===p.city)?.id === p.id) t.push(`⭐ ${p.city}最強`);
+  return t;
+}
+function cardHTML(p, st){
+  const s = st[p.id], r = rarity(s), t = titles(p, st);
+  return `<div class="tc ${p.frozen?'frozen':''}" style="background:${r.bg}">
+    <div class="tc-in">
+      <div class="tc-top"><span class="tc-name">${esc(p.name)}</span><span class="badge" style="background:${r.bg};color:${r.c}">${r.k}</span></div>
+      <div class="note" style="color:#666">${esc(p.pref)} ${esc(p.city)} ／ ${esc(p.cls)}</div>
+      <div class="tc-art" style="background:${r.bg}">${esc(p.icon)}</div>
+      <div class="tc-power">戦闘力 <b>${Math.round(s.r)}</b></div>
+      <div class="tc-stats"><div>勝敗 ${s.w}-${s.l}</div><div>勝率 ${s.games?Math.round(s.w/s.games*100):0}%</div>
+        <div>フェアプレー ${p.fair}</div><div>対戦相手 ${s.met.size}人</div></div>
+      <div class="tc-title">${t.join(' ')}</div>
+      <div class="tc-foot"><span>${esc(p.gym||'')}</span><span>💪 腕ずもうランク</span></div>
+    </div>${p.frozen?'<div class="stamp">凍結</div>':''}</div>`;
+}
+function renderCards(){
+  const st = compute('', '');
+  $('cardList').innerHTML = db.players.length ? [...db.players].sort((a,b)=>st[b.id].r-st[a.id].r).map(p => { const r=rarity(st[p.id]);
+    return `<div class="mini ${p.frozen?'frozen':''}" style="background:${r.bg};color:${r.c}" data-id="${p.id}">
+      <span class="badge" style="background:#fff">${r.k}</span><div class="p">${esc(p.icon)} ${Math.round(st[p.id].r)}</div><b>${esc(p.name)}</b><span style="font-size:11px">${esc(p.city)}${p.frozen?' ／ 凍結中':''}</span></div>`; }).join('')
+    : '<p class="note">選手がいません。</p>';
+  $('cardList').querySelectorAll('.mini').forEach(d => d.onclick = () => openCard(d.dataset.id));
+  if (curCard) showCard(curCard);
+}
+function openCard(id){
+  curCard = id;
+  document.querySelector('nav button[data-t="cards"]').click();
+  $('cardDetailBox').scrollIntoView({behavior:'smooth'});
+}
+function showCard(id){
+  const p = P(id); if (!p) return;
+  const st = compute('', ''), s = st[id];
+  $('cardDetailBox').style.display = 'block';
+  $('cardBig').innerHTML = cardHTML(p, st);
+  $('cdName').textContent = p.icon + ' ' + p.name;
+  $('cdInfo').innerHTML = `所属：${esc(p.gym||'-')} ／ 階級：${esc(p.cls)} ／ 反暴力の誓約：${p.pledge?'✅ 済':'未'}${p.frozen?'<br><b style="color:var(--ng)">🚫 暴力行為の通報により凍結中</b>':''}`;
+  const beat = Object.entries(s.beat).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  $('cdBeat').innerHTML = beat.length ? beat.map(([pid,r]) => `<span class="chip">🗡 ${esc(P(pid)?.name)}（${Math.round(r)}）</span>`).join('') : '<span class="note">まだありません</span>';
+  $('cdSwap').innerHTML = s.met.size ? [...s.met].map(pid => { const q=P(pid); return `<span class="chip">${esc(q?.icon)} ${esc(q?.name)}</span>`; }).join('') : '<span class="note">まだありません</span>';
+  $('cdFreeze').textContent = p.frozen ? '🔓 凍結を解除（審査済み）' : '🚫 暴力行為を通報（凍結）';
+}
+$('cdFair').onclick = () => { const p=P(curCard); p.fair = Math.min(100, p.fair+1); save(); render(); toast('フェアプレー値 +1'); };
+$('cdFreeze').onclick = () => {
+  const p = P(curCard);
+  if (!p.frozen && !confirm(`${p.name} のカードを凍結しますか？\n（本番では運営・立会人の審査を経て凍結されます）`)) return;
+  p.frozen = !p.frozen; save(); render(); toast(p.frozen ? 'カードを凍結しました' : '凍結を解除しました');
+};
+$('cdShare').onclick = () => {
+  const p = P(curCard), st = compute('', ''), s = st[p.id], r = rarity(s);
+  const text = `💪 腕ずもうランク\n${p.name}（${p.pref}${p.city}）\n戦闘力 ${Math.round(s.r)} ／ ${r.k}カード ／ ${s.w}勝${s.l}敗\n${titles(p,st).join(' ')}\n#喧嘩より公式戦 #腕ずもうランク`;
+  if (navigator.share) navigator.share({text, url:location.href}).catch(()=>{});
+  else window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(location.href));
+};
+$('cdPng').onclick = () => {
+  const p = P(curCard), st = compute('', ''), s = st[p.id], r = rarity(s);
+  const cv = document.createElement('canvas'); cv.width = 600; cv.height = 860; const g = cv.getContext('2d');
+  const cols = {LEGEND:['#ff004c','#ffb300','#00e5ff','#b000ff'],UR:['#fceabb','#f8b500'],SR:['#f5f5f5','#9e9e9e'],R:['#7fd3ff','#2f7cf6'],N:['#b8c0cc','#7d8796']}[r.k];
+  const gr = g.createLinearGradient(0,0,600,860); cols.forEach((c,i)=>gr.addColorStop(i/(cols.length-1), c));
+  const rr = (x,y,w,h,rad)=>{ g.beginPath(); g.roundRect(x,y,w,h,rad); };
+  g.fillStyle = gr; rr(0,0,600,860,36); g.fill();
+  g.fillStyle = '#fff'; rr(24,24,552,812,24); g.fill();
+  const F = s => `bold ${s}px "Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif`;
+  g.fillStyle = '#111'; g.font = F(42); g.fillText(p.name, 52, 92);
+  g.fillStyle = gr; rr(430,52,120,50,25); g.fill(); g.fillStyle = r.k==='UR'?'#5a3d00':'#fff'; g.font = F(26); g.textAlign='center'; g.fillText(r.k, 490, 87); g.textAlign='left';
+  g.fillStyle = '#666'; g.font = F(22); g.fillText(`${p.pref} ${p.city} ／ ${p.cls}`, 52, 132);
+  g.fillStyle = gr; rr(52,152,496,260,20); g.fill();
+  g.font = '150px sans-serif'; g.textAlign='center'; g.fillText(p.icon, 300, 340); g.textAlign='left';
+  g.fillStyle = '#555'; g.font = F(26); g.fillText('戦闘力', 52, 480); g.fillStyle='#111'; g.font = F(64); g.fillText(Math.round(s.r), 150, 486);
+  const stats = [`勝敗 ${s.w}-${s.l}`, `勝率 ${s.games?Math.round(s.w/s.games*100):0}%`, `フェアプレー ${p.fair}`, `対戦相手 ${s.met.size}人`];
+  stats.forEach((t,i)=>{ const x=52+(i%2)*252, y=520+Math.floor(i/2)*66; g.fillStyle='#f2f3f7'; rr(x,y,244,54,12); g.fill(); g.fillStyle='#111'; g.font=F(24); g.fillText(t,x+16,y+36); });
+  g.fillStyle = '#d7263d'; g.font = F(26); g.fillText(titles(p,st).join('  '), 52, 700);
+  g.fillStyle = '#888'; g.font = F(20); g.fillText(p.gym||'', 52, 800); g.textAlign='right'; g.fillText('💪 腕ずもうランク  #喧嘩より公式戦', 548, 800);
+  if (p.frozen){ g.save(); g.translate(300,430); g.rotate(-0.3); g.fillStyle='rgba(255,77,109,.9)'; g.font=F(110); g.textAlign='center'; g.fillText('凍結',0,40); g.restore(); }
+  const a = document.createElement('a'); a.download = `udezumo-card-${p.name}.png`; a.href = cv.toDataURL('image/png'); a.click();
+};
+
+// ===== 選手登録 =====
+$('pPref').innerHTML = PREFS.map(p => `<option ${p==='東京都'?'selected':''}>${p}</option>`).join('');
+$('pSave').onclick = () => {
+  const name = $('pName').value.trim(), city = $('pCity').value.trim();
+  if (!name || !city) return toast('リングネームと市区町村を入力してください');
+  if (!$('pPledge').checked) return toast('反暴力の誓約に同意してください');
+  if (db.players.some(p => p.name === name)) return toast('同じリングネームが既にあります');
+  const p = {id:uid(), name, pref:$('pPref').value, city, gym:$('pGym').value.trim(), cls:$('pClass').value, icon:$('pIcon').value, fair:100, pledge:true, frozen:false};
+  db.players.push(p); save();
+  ['pName','pCity','pGym'].forEach(id=>$(id).value=''); $('pPledge').checked=false;
+  toast('カードを発行しました！'); openCard(p.id);
+};
+
+// ===== デモデータ =====
+$('demo').onclick = () => {
+  if (db.players.length && !confirm('現在のデータを消してサンプルを入れますか？')) return;
+  let seed = 42; const rnd = () => (seed = (seed*16807) % 2147483647) / 2147483647;
+  const list = [
+    ['鉄腕タロウ','東京都','渋谷区','渋谷アームジム','-80kg','🦍',1.00],['剛腕ミカ','東京都','渋谷区','渋谷アームジム','女子','🌸',0.75],
+    ['ハンマー健','東京都','新宿区','新宿パワーバー','+90kg','🐻',0.90],['雷神リク','東京都','新宿区','新宿パワーバー','-70kg','⚡',0.70],
+    ['ゴリ松','東京都','世田谷区','三茶アームクラブ','-90kg','🦁',0.80],['ヤス','東京都','世田谷区','三茶アームクラブ','-60kg','🐯',0.45],
+    ['浪速の鬼','大阪府','大阪市北区','梅田リストジム','+90kg','🔥',0.95],['こなもん将','大阪府','大阪市北区','梅田リストジム','-80kg','🐉',0.60],
+    ['堺の鉄人','大阪府','堺市','堺アームズ','-90kg','🤖',0.65],['博多ゴンちゃん','福岡県','福岡市','天神アームバー','-80kg','💪',0.85],
+    ['中洲のトラ','福岡県','福岡市','天神アームバー','-70kg','🐯',0.55],['小倉の巌','福岡県','北九州市','小倉ストロング','+90kg','🦍',0.50],
+  ];
+  const players = list.map(([name,pref,city,gym,cls,icon,str]) => ({id:uid(),name,pref,city,gym,cls,icon,fair:85+Math.floor(rnd()*16),pledge:true,frozen:false,_s:str}));
+  const matches = [];
+  const start = new Date('2025-01-10').getTime(), end = new Date('2026-10-30').getTime();
+  for (let i=0;i<140;i++){
+    const a = players[Math.floor(rnd()*players.length)];
+    const near = players.filter(p => p!==a && (rnd()<0.75 ? p.pref===a.pref : true));
+    const b = near[Math.floor(rnd()*near.length)]; if (!b) continue;
+    const pa = a._s/(a._s+b._s);
+    const level = [1,2,2,3,3,3,4][Math.floor(rnd()*7)];
+    matches.push({id:uid(), date:new Date(start + rnd()*(end-start)).toISOString(), a:a.id, b:b.id, winner: rnd()<pa ? a.id : b.id,
+      arm: rnd()<0.8?'R':'L', level, place:a.gym, referee: level>=3?a.gym+' 認定立会人':'', video: level>=2?'match.mp4':null});
+  }
+  players.forEach(p => delete p._s);
+  db = {players, matches}; save(); curCard = null; $('cardDetailBox').style.display='none';
+  toast('サンプルデータを入れました'); document.querySelector('nav button[data-t="rank"]').click();
+};
+$('reset').onclick = () => { if (!confirm('全データを消しますか？')) return; db = {players:[],matches:[]}; save(); curCard=null; $('cardDetailBox').style.display='none'; render(); toast('消去しました'); };
+
+// ===== 描画 =====
+function render(){
+  const t = document.querySelector('main section.on').id;
+  if (t==='rank') renderRank();
+  if (t==='match'){ fillMatchSelects(); renderMatchUI(); renderRecent(); }
+  if (t==='cards') renderCards();
+}
+render();
+</script>
+</body>
+</html>
